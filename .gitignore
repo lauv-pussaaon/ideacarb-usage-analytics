@@ -1,0 +1,11 @@
+node_modules
+__pycache__/
+*.pyc
+.next
+out
+.env
+.env.local
+deploy/deploy.env
+api/.venv
+*.tsbuildinfo
+next-env.d.ts

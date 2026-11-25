@@ -1,0 +1,72 @@
+export interface UsageSeriesPoint {
+  date: string
+  page_views: number
+  unique_users: number
+}
+
+export interface UsageClientRow {
+  organization_id: string
+  code: string
+  name: string
+  account_type: string
+  unique_users: number
+  page_views: number
+  last_seen: string | null
+  sparkline: number[]
+}
+
+export interface UsageDirectoryEntry {
+  organization_id: string
+  code: string
+  name: string
+  account_type: string
+}
+
+export interface UsageOverview {
+  from: string
+  to: string
+  kpis: {
+    active_clients: number
+    unique_users: number
+    page_views: number
+    client_count: number
+  }
+  series: UsageSeriesPoint[]
+  directory: UsageDirectoryEntry[]
+  clients: {
+    page: number
+    page_size: number
+    total: number
+    rows: UsageClientRow[]
+  }
+}
+
+export interface UsageClientDetail {
+  from: string
+  to: string
+  client: UsageDirectoryEntry
+  kpis: {
+    unique_users: number
+    page_views: number
+    sessions: number
+    last_seen: string | null
+  }
+  series: UsageSeriesPoint[]
+  pages: { page: string; page_views: number }[]
+}
+
+export interface UsageUserRow {
+  user_id: string
+  user_label: string
+  user_role: string
+  page_views: number
+  last_seen: string | null
+  last_page: string
+}
+
+export interface UsageUsersPage {
+  page: number
+  page_size: number
+  total: number
+  rows: UsageUserRow[]
+}
