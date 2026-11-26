@@ -60,8 +60,8 @@ export default function UsageChart({ series }: { series: UsageSeriesPoint[] }) {
           }}
         />
         <Legend />
-        <Line yAxisId="page_views" type="monotone" dataKey="page_views" name="เข้าชมหน้า" stroke={theme.palette.primary.main} strokeWidth={2} dot={false} />
-        <Line yAxisId="unique_users" type="monotone" dataKey="unique_users" name="ผู้ใช้ไม่ซ้ำ" stroke={theme.palette.secondary.main} strokeWidth={2} strokeDasharray="5 4" dot={false} />
+        <Line yAxisId="page_views" type="monotone" dataKey="page_views" name="เข้าใช้แพลตฟอร์ม" stroke={theme.palette.primary.main} strokeWidth={2} dot={false} />
+        <Line yAxisId="unique_users" type="monotone" dataKey="unique_users" name="ผู้ใช้ไม่นับซ้ำ" stroke={theme.palette.secondary.main} strokeWidth={2} strokeDasharray="5 4" dot={false} />
       </LineChart>
     </ResponsiveContainer>
   )

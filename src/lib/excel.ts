@@ -50,14 +50,14 @@ export async function overviewWorkbook(data: UsageOverviewExport): Promise<Buffe
     ['ลูกค้า', clients],
     ['ค้นหา', data.filters.q || '—'],
     ['ลูกค้าที่ใช้งาน', data.kpis.active_clients],
-    ['ผู้ใช้ไม่ซ้ำ', data.kpis.unique_users],
-    ['เข้าชมหน้า', data.kpis.page_views],
+    ['ผู้ใช้ไม่นับซ้ำ', data.kpis.unique_users],
+    ['เข้าใช้แพลตฟอร์ม', data.kpis.page_views],
   ])
-  addSheet(workbook, 'รายวัน', ['วันที่', 'เข้าชมหน้า', 'ผู้ใช้ไม่ซ้ำ'], seriesRows(data.series))
+  addSheet(workbook, 'รายวัน', ['วันที่', 'เข้าใช้แพลตฟอร์ม', 'ผู้ใช้ไม่นับซ้ำ'], seriesRows(data.series))
   addSheet(
     workbook,
     'ลูกค้า',
-    ['รหัส', 'ชื่อ', 'ประเภท', 'ผู้ใช้ไม่ซ้ำ', 'เข้าชมหน้า', 'เห็นล่าสุด'],
+    ['รหัส', 'ชื่อ', 'ประเภท', 'ผู้ใช้ไม่นับซ้ำ', 'เข้าใช้แพลตฟอร์ม', 'เห็นล่าสุด'],
     data.clients.map((client) => [
       client.code,
       client.name,
@@ -77,22 +77,22 @@ export async function clientWorkbook(data: UsageClientExport): Promise<Buffer> {
     ['รหัส', data.client.code],
     ['ประเภท', accountTypeLabel(data.client.account_type)],
     ['ช่วงเวลา', `${data.from} – ${data.to}`],
-    ['ผู้ใช้ไม่ซ้ำ', data.kpis.unique_users],
-    ['เข้าชมหน้า', data.kpis.page_views],
+    ['ผู้ใช้ไม่นับซ้ำ', data.kpis.unique_users],
+    ['เข้าใช้แพลตฟอร์ม', data.kpis.page_views],
     ['เซสชัน', data.kpis.sessions],
     ['เห็นล่าสุด', seen(data.kpis.last_seen)],
   ])
-  addSheet(workbook, 'รายวัน', ['วันที่', 'เข้าชมหน้า', 'ผู้ใช้ไม่ซ้ำ'], seriesRows(data.series))
+  addSheet(workbook, 'รายวัน', ['วันที่', 'เข้าใช้แพลตฟอร์ม', 'ผู้ใช้ไม่นับซ้ำ'], seriesRows(data.series))
   addSheet(
     workbook,
     'หน้า',
-    ['หน้า', 'เข้าชมหน้า'],
+    ['หน้า', 'เข้าใช้แพลตฟอร์ม'],
     data.pages.map((row) => [row.page, row.page_views])
   )
   addSheet(
     workbook,
     'ผู้ใช้',
-    ['ผู้ใช้', 'บทบาท', 'เข้าชมหน้า', 'เห็นล่าสุด', 'หน้าล่าสุด'],
+    ['ผู้ใช้', 'บทบาท', 'เข้าใช้แพลตฟอร์ม', 'เห็นล่าสุด', 'หน้าล่าสุด'],
     data.users.map((user) => [
       user.user_label,
       tenantRoleLabel(user.user_role),

@@ -80,7 +80,7 @@ export default function AnalyticsClientPage() {
       minWidth: 180,
       valueGetter: (_value, row) => tenantRoleLabel(row.user_role),
     },
-    { field: 'page_views', headerName: 'เข้าชมหน้า', flex: 0.7, minWidth: 150, type: 'number' },
+    { field: 'page_views', headerName: 'เข้าใช้แพลตฟอร์ม', flex: 0.9, minWidth: 230, type: 'number' },
     {
       field: 'last_seen',
       headerName: 'เห็นล่าสุด',
@@ -147,8 +147,8 @@ export default function AnalyticsClientPage() {
           </Box>
           {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
-            <MetricCard label="ผู้ใช้ไม่ซ้ำ" value={detail?.kpis.unique_users} note="ผู้ใช้ที่เข้าสู่ระบบในช่วงนี้" color={DEFAULT_SECONDARY} icon={<Groups />} loading={loading && !detail} />
-            <MetricCard label="เข้าชมหน้า" value={detail?.kpis.page_views} note="รวมทุกหน้าของลูกค้านี้" color={DEFAULT_PRIMARY.main} icon={<Visibility />} loading={loading && !detail} />
+            <MetricCard label="ผู้ใช้ไม่นับซ้ำ" value={detail?.kpis.unique_users} note="ผู้ใช้ที่เข้าสู่ระบบในช่วงนี้" color={DEFAULT_SECONDARY} icon={<Groups />} loading={loading && !detail} />
+            <MetricCard label="เข้าใช้แพลตฟอร์ม" value={detail?.kpis.page_views} note="รวมทุกหน้าของลูกค้านี้" color={DEFAULT_PRIMARY.main} icon={<Visibility />} loading={loading && !detail} />
             <MetricCard label="เซสชัน" value={detail?.kpis.sessions} note="เซสชันหมดอายุเมื่อว่าง 30 นาที" color={SESSIONS} icon={<Timeline />} loading={loading && !detail} />
           </Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.4fr 0.8fr' }, gap: 2, mb: 3 }}>

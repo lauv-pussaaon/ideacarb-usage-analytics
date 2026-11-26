@@ -144,8 +144,8 @@ export default function AnalyticsPage() {
         )
       },
     },
-    { field: 'unique_users', headerName: 'ผู้ใช้ไม่ซ้ำ', flex: 0.7, minWidth: 150, type: 'number' },
-    { field: 'page_views', headerName: 'เข้าชมหน้า', flex: 0.7, minWidth: 150, type: 'number' },
+    { field: 'unique_users', headerName: 'ผู้ใช้ไม่นับซ้ำ', flex: 0.8, minWidth: 190, type: 'number' },
+    { field: 'page_views', headerName: 'เข้าใช้แพลตฟอร์ม', flex: 0.9, minWidth: 230, type: 'number' },
     {
       field: 'last_seen',
       headerName: 'เห็นล่าสุด',
@@ -210,7 +210,7 @@ export default function AnalyticsPage() {
 
       <Paper elevation={0} sx={{ ...cardSx, p: 3, mb: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'auto 1fr' }, gap: 3, alignItems: 'center' }}>
         <Box>
-          <Typography color="text.secondary">เข้าชมหน้า</Typography>
+          <Typography color="text.secondary">เข้าใช้แพลตฟอร์ม</Typography>
           <Typography sx={{ fontWeight: 700, fontSize: '4.25rem', lineHeight: 1, letterSpacing: '-0.04em', color: DEFAULT_PRIMARY.main, my: 1 }}>
             {loading && !data ? '—' : Number(data?.kpis.page_views ?? 0).toLocaleString('en-US')}
           </Typography>
@@ -239,7 +239,7 @@ export default function AnalyticsPage() {
           loading={loading && !data}
         />
         <MetricCard
-          label="ผู้ใช้ไม่ซ้ำ"
+          label="ผู้ใช้ไม่นับซ้ำ"
           value={data?.kpis.unique_users}
           note="ผู้ใช้ที่เข้าสู่ระบบ"
           color={DEFAULT_SECONDARY}
@@ -247,7 +247,7 @@ export default function AnalyticsPage() {
           loading={loading && !data}
         />
         <MetricCard
-          label="เข้าชมหน้า"
+          label="เข้าใช้แพลตฟอร์ม"
           value={data?.kpis.page_views}
           note="รวมทุกหน้าของลูกค้าในกลุ่ม"
           color={DEFAULT_PRIMARY.main}
