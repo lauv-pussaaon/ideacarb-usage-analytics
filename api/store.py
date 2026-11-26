@@ -520,23 +520,25 @@ def overview_export(
 
     user_rows = conn.execute(
         f"""
-        SELECT code, name, user_id, user_label, user_role, page_views, last_seen, last_page
+        SELECT code, name, user_id, user_label, user_role, page, page_views, last_seen
         FROM (
           SELECT
             c.code,
             c.name,
-            u.user_id::text AS user_id,
-            (array_agg(u.user_label ORDER BY u.last_seen DESC))[1] AS user_label,
-            (array_agg(u.user_role ORDER BY u.last_seen DESC))[1] AS user_role,
-            SUM(u.page_views) AS page_views,
-            MAX(u.last_seen) AS last_seen,
-            (array_agg(u.last_page ORDER BY u.last_seen DESC))[1] AS last_page
-          FROM usage_daily_user u
-          JOIN clients c ON c.organization_id = u.organization_id
-          WHERE u.day BETWEEN %s AND %s AND {where}
-          GROUP BY c.organization_id, c.code, c.name, u.user_id
+            e.user_id::text AS user_id,
+            (array_agg(e.user_label ORDER BY e.occurred_at DESC))[1] AS user_label,
+            (array_agg(e.user_role ORDER BY e.occurred_at DESC))[1] AS user_role,
+            e.page,
+            COUNT(*)::int AS page_views,
+            MAX(e.occurred_at) AS last_seen
+          FROM usage_events e
+          JOIN clients c ON c.organization_id = e.organization_id
+          WHERE e.occurred_at >= %s::timestamp AT TIME ZONE '{ZONE}'
+            AND e.occurred_at < (%s::date + 1)::timestamp AT TIME ZONE '{ZONE}'
+            AND {where}
+          GROUP BY c.organization_id, c.code, c.name, e.user_id, e.page
         ) users
-        ORDER BY page_views DESC, user_label
+        ORDER BY page_views DESC, user_label, page
         """,
         [start, end, *params],
     ).fetchall()

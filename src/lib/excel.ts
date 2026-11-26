@@ -54,15 +54,15 @@ export async function overviewWorkbook(data: UsageOverviewExport): Promise<Buffe
   addSheet(
     workbook,
     'ผู้ใช้',
-    ['รหัส', 'ชื่อลูกค้า', 'ผู้ใช้', 'บทบาท', 'เข้าใช้แพลตฟอร์ม', 'เห็นล่าสุด', 'หน้าล่าสุด'],
+    ['รหัส', 'ชื่อลูกค้า', 'ผู้ใช้', 'บทบาท', 'หน้า', 'เข้าใช้แพลตฟอร์ม', 'เห็นล่าสุด'],
     data.users.map((user) => [
       user.code,
       user.name,
       user.user_label,
       tenantRoleLabel(user.user_role),
+      user.page,
       user.page_views,
       seen(user.last_seen),
-      user.last_page,
     ])
   )
   return Buffer.from(await workbook.xlsx.writeBuffer())

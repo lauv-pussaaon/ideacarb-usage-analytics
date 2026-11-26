@@ -78,9 +78,9 @@ export interface UsageOverviewUserRow {
   user_id: string
   user_label: string
   user_role: string
+  page: string
   page_views: number
   last_seen: string | null
-  last_page: string
 }
 
 export interface UsageOverviewExport {
