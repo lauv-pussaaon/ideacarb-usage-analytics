@@ -250,14 +250,27 @@ export default function AnalyticsPage() {
                 sx: { width: 'auto !important', minWidth: 'min(760px, calc(100vw - 32px))' },
               },
             }}
-            renderGroup={(params) => (
-              <li key={params.key}>
-                <ListSubheader component="div" sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.4, bgcolor: 'background.paper', whiteSpace: 'nowrap' }}>
-                  {params.group}
-                </ListSubheader>
-                <ul style={{ padding: 0 }}>{params.children}</ul>
-              </li>
-            )}
+            renderGroup={(params) => {
+              const active = params.group === 'มีการใช้งานในช่วงที่เลือก'
+              return (
+                <li key={params.key}>
+                  <ListSubheader
+                    component="div"
+                    sx={{
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      lineHeight: 1.4,
+                      whiteSpace: 'nowrap',
+                      color: active ? '#047857' : '#475569',
+                      bgcolor: active ? '#d1fae5' : '#e2e8f0',
+                    }}
+                  >
+                    {params.group}
+                  </ListSubheader>
+                  <ul style={{ padding: 0 }}>{params.children}</ul>
+                </li>
+              )
+            }}
             renderOption={(props, option) => (
               <li {...props}>
                 <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 2, minWidth: 0 }}>
