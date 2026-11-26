@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { SESSION_COOKIE, staffSessionToken } from '@/lib/session'
 
+function redirect(request: NextRequest, pathname: string) {
+  return NextResponse.redirect(new URL(pathname, process.env.APP_URL || request.url))
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const secret = process.env.AUTH_SECRET || ''
@@ -10,7 +14,7 @@ export async function middleware(request: NextRequest) {
 
   if (pathname === '/login') {
     if (signedIn) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return redirect(request, '/')
     }
     return NextResponse.next()
   }
@@ -28,7 +32,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/api/')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  return NextResponse.redirect(new URL('/login', request.url))
+  return redirect(request, '/login')
 }
 
 export const config = {
