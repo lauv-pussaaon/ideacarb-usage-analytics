@@ -395,6 +395,196 @@ def client_detail(conn, organization_id: str, start: date, end: date) -> dict | 
     }
 
 
+def overview_export(
+    conn,
+    start: date,
+    end: date,
+    account_types: list[str] | None,
+    organization_ids: list[str] | None,
+    query: str | None,
+    sort: str,
+) -> dict:
+    where, params = _filters(account_types, organization_ids, query)
+    order = SORTS.get(sort, "page_views")
+
+    kpis = conn.execute(
+        f"""
+        WITH filtered AS (
+          SELECT c.organization_id FROM clients c WHERE {where}
+        )
+        SELECT
+          (SELECT COUNT(*) FROM filtered) AS client_count,
+          (
+            SELECT COUNT(DISTINCT d.organization_id)
+            FROM usage_daily d
+            JOIN filtered f ON f.organization_id = d.organization_id
+            WHERE d.day BETWEEN %s AND %s AND d.page_views > 0
+          ) AS active_clients,
+          (
+            SELECT COUNT(DISTINCT u.user_id)
+            FROM usage_daily_user u
+            JOIN filtered f ON f.organization_id = u.organization_id
+            WHERE u.day BETWEEN %s AND %s
+          ) AS unique_users,
+          (
+            SELECT COALESCE(SUM(d.page_views), 0)
+            FROM usage_daily d
+            JOIN filtered f ON f.organization_id = d.organization_id
+            WHERE d.day BETWEEN %s AND %s
+          ) AS page_views
+        """,
+        [*params, start, end, start, end, start, end],
+    ).fetchone()
+
+    series_rows = conn.execute(
+        f"""
+        WITH filtered AS (
+          SELECT c.organization_id FROM clients c WHERE {where}
+        ),
+        days AS (
+          SELECT generate_series(%s::date, %s::date, '1 day')::date AS day
+        )
+        SELECT
+          days.day,
+          COALESCE((
+            SELECT SUM(d.page_views)
+            FROM usage_daily d
+            JOIN filtered f ON f.organization_id = d.organization_id
+            WHERE d.day = days.day
+          ), 0) AS page_views,
+          COALESCE((
+            SELECT COUNT(DISTINCT u.user_id)
+            FROM usage_daily_user u
+            JOIN filtered f ON f.organization_id = u.organization_id
+            WHERE u.day = days.day
+          ), 0) AS unique_users
+        FROM days
+        ORDER BY days.day
+        """,
+        [*params, start, end],
+    ).fetchall()
+
+    selected: list = []
+    if organization_ids:
+        selected = conn.execute(
+            """
+            SELECT code, name
+            FROM clients
+            WHERE organization_id = ANY(%s::uuid[])
+            ORDER BY name
+            """,
+            (organization_ids,),
+        ).fetchall()
+
+    rows = conn.execute(
+        f"""
+        SELECT
+          c.organization_id::text AS organization_id,
+          c.code,
+          c.name,
+          c.account_type,
+          COALESCE(SUM(d.page_views), 0) AS page_views,
+          (
+            SELECT COUNT(DISTINCT u.user_id)
+            FROM usage_daily_user u
+            WHERE u.organization_id = c.organization_id
+              AND u.day BETWEEN %s AND %s
+          ) AS unique_users,
+          (
+            SELECT MAX(u.last_seen)
+            FROM usage_daily_user u
+            WHERE u.organization_id = c.organization_id
+              AND u.day BETWEEN %s AND %s
+          ) AS last_seen
+        FROM clients c
+        LEFT JOIN usage_daily d
+          ON d.organization_id = c.organization_id
+         AND d.day BETWEEN %s AND %s
+        WHERE {where}
+        GROUP BY c.organization_id, c.code, c.name, c.account_type
+        ORDER BY {order} DESC NULLS LAST, c.name
+        """,
+        [start, end, start, end, start, end, *params],
+    ).fetchall()
+
+    return {
+        "from": start.isoformat(),
+        "to": end.isoformat(),
+        "filters": {
+            "account_types": account_types or [],
+            "q": query or "",
+            "clients": [{"code": row["code"], "name": row["name"]} for row in selected],
+        },
+        "kpis": {
+            "active_clients": int(kpis["active_clients"] or 0),
+            "unique_users": int(kpis["unique_users"] or 0),
+            "page_views": int(kpis["page_views"] or 0),
+            "client_count": int(kpis["client_count"] or 0),
+        },
+        "series": [
+            {
+                "date": row["day"].isoformat(),
+                "page_views": int(row["page_views"]),
+                "unique_users": int(row["unique_users"]),
+            }
+            for row in series_rows
+        ],
+        "clients": [
+            {
+                **row,
+                "page_views": int(row["page_views"]),
+                "unique_users": int(row["unique_users"]),
+                "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None,
+            }
+            for row in rows
+        ],
+    }
+
+
+def client_export(conn, organization_id: str, start: date, end: date) -> dict | None:
+    detail = client_detail(conn, organization_id, start, end)
+    if not detail:
+        return None
+    pages = conn.execute(
+        """
+        SELECT page, SUM(page_views) AS page_views
+        FROM usage_daily_page
+        WHERE organization_id = %s AND day BETWEEN %s AND %s
+        GROUP BY page
+        ORDER BY page_views DESC, page
+        """,
+        (organization_id, start, end),
+    ).fetchall()
+    rows = conn.execute(
+        """
+        SELECT
+          user_id::text,
+          (array_agg(user_label ORDER BY last_seen DESC))[1] AS user_label,
+          (array_agg(user_role ORDER BY last_seen DESC))[1] AS user_role,
+          SUM(page_views) AS page_views,
+          MAX(last_seen) AS last_seen,
+          (array_agg(last_page ORDER BY last_seen DESC))[1] AS last_page
+        FROM usage_daily_user
+        WHERE organization_id = %s AND day BETWEEN %s AND %s
+        GROUP BY user_id
+        ORDER BY page_views DESC, user_label
+        """,
+        (organization_id, start, end),
+    ).fetchall()
+    return {
+        **detail,
+        "pages": [{"page": row["page"], "page_views": int(row["page_views"])} for row in pages],
+        "users": [
+            {
+                **row,
+                "page_views": int(row["page_views"]),
+                "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None,
+            }
+            for row in rows
+        ],
+    }
+
+
 def client_users(conn, organization_id: str, start: date, end: date, page: int, page_size: int) -> dict | None:
     exists = conn.execute(
         "SELECT 1 FROM clients WHERE organization_id = %s",

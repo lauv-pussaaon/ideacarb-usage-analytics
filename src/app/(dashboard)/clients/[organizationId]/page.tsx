@@ -2,15 +2,18 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { Alert, Box, Button, CircularProgress, Paper, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, CircularProgress, Paper, Typography } from '@mui/material'
 import { DataGrid, type GridColDef, type GridPaginationModel } from '@mui/x-data-grid'
 import Link from 'next/link'
-import { ArrowBack } from '@mui/icons-material'
+import { ArrowBack, FileDownload, Groups, Timeline, Visibility } from '@mui/icons-material'
 import UsageChart from '@/components/UsageChart'
+import MetricCard from '@/components/MetricCard'
 import { getUsageClient, getUsageUsers } from '@/lib/api'
+import { downloadAnalyticsExport } from '@/lib/download'
 import { formatDateTime } from '@/lib/datetime'
-import { accountTypeLabel, tenantRoleLabel } from '@/lib/labels'
-import { backButtonSx, dataGridPaperSx, dataGridProps, dataGridSx, kpiValueSx, pageShellSx, pageTitleSx } from '@/lib/ui'
+import { accountTypeColor, accountTypeLabel, tenantRoleLabel } from '@/lib/labels'
+import { backButtonSx, cardSx, codeBadgeSx, dataGridPaperSx, dataGridProps, dataGridSx, pageShellSx, pageTitleSx } from '@/lib/ui'
+import { DEFAULT_PRIMARY, DEFAULT_SECONDARY, SESSIONS } from '@/theme/tokens'
 import type { UsageClientDetail, UsageUsersPage } from '@/types/analytics'
 
 function defaultRange() {
@@ -36,6 +39,7 @@ export default function AnalyticsClientPage() {
   const [users, setUsers] = useState<UsageUsersPage | null>(null)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [missing, setMissing] = useState(false)
 
@@ -89,6 +93,21 @@ export default function AnalyticsClientPage() {
 
   const maxPage = Math.max(...(detail?.pages.map((row) => row.page_views) ?? [1]), 1)
 
+  async function exportExcel() {
+    if (!organizationId) return
+    setExporting(true)
+    try {
+      await downloadAnalyticsExport(
+        `/api/analytics/clients/${encodeURIComponent(organizationId)}/export?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+      )
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'ส่งออก Excel ไม่สำเร็จ')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <Box sx={pageShellSx}>
       <Button component={Link} href={`/?from=${from}&to=${to}`} startIcon={<ArrowBack />} sx={backButtonSx}>
@@ -98,34 +117,46 @@ export default function AnalyticsClientPage() {
         <Alert severity="warning">ไม่พบลูกค้านี้ในข้อมูลการใช้งาน</Alert>
       ) : (
         <>
-          <Typography variant="h4" sx={pageTitleSx}>{detail?.client.name ?? 'ลูกค้า'}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            <Box component="span" sx={{ fontFamily: 'monospace', mr: 1 }}>{detail?.client.code}</Box>
-            {detail ? accountTypeLabel(detail.client.account_type) : ''}
-            {` · ${from} – ${to}`}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, mb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+              <Typography variant="h4" sx={{ ...pageTitleSx, minWidth: 0 }}>{detail?.client.name ?? 'ลูกค้า'}</Typography>
+              {detail?.client.code && <Chip label={detail.client.code} sx={{ ...codeBadgeSx, flexShrink: 0 }} />}
+            </Box>
+            <Button
+              variant="contained"
+              startIcon={exporting ? <CircularProgress size={18} color="inherit" /> : <FileDownload />}
+              disabled={loading || exporting || !detail}
+              onClick={() => { void exportExcel() }}
+              sx={{ flexShrink: 0 }}
+            >
+              ส่งออก Excel
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+            {detail && (
+              <Chip
+                label={accountTypeLabel(detail.client.account_type)}
+                sx={{
+                  fontWeight: 700,
+                  color: '#fff',
+                  bgcolor: accountTypeColor(detail.client.account_type),
+                }}
+              />
+            )}
+            <Typography variant="body1" color="text.secondary">{`${from} – ${to}`}</Typography>
+          </Box>
           {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
-            {[
-              ['ผู้ใช้ไม่ซ้ำ', detail?.kpis.unique_users, 'ผู้ใช้ที่เข้าสู่ระบบในช่วงนี้'],
-              ['เข้าชมหน้า', detail?.kpis.page_views, 'รวมทุกหน้าของลูกค้านี้'],
-              ['เซสชัน', detail?.kpis.sessions, 'เซสชันหมดอายุเมื่อว่าง 30 นาที'],
-            ].map(([label, value, note]) => (
-              <Paper key={String(label)} elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                <Typography variant="body1" color="text.secondary">{label}</Typography>
-                <Typography sx={kpiValueSx}>
-                  {loading && !detail ? '—' : Number(value ?? 0).toLocaleString('en-US')}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">{note}</Typography>
-              </Paper>
-            ))}
+            <MetricCard label="ผู้ใช้ไม่ซ้ำ" value={detail?.kpis.unique_users} note="ผู้ใช้ที่เข้าสู่ระบบในช่วงนี้" color={DEFAULT_SECONDARY} icon={<Groups />} loading={loading && !detail} />
+            <MetricCard label="เข้าชมหน้า" value={detail?.kpis.page_views} note="รวมทุกหน้าของลูกค้านี้" color={DEFAULT_PRIMARY.main} icon={<Visibility />} loading={loading && !detail} />
+            <MetricCard label="เซสชัน" value={detail?.kpis.sessions} note="เซสชันหมดอายุเมื่อว่าง 30 นาที" color={SESSIONS} icon={<Timeline />} loading={loading && !detail} />
           </Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.4fr 0.8fr' }, gap: 2, mb: 3 }}>
-            <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+            <Paper elevation={0} sx={{ ...cardSx, p: 2.5 }}>
               <Typography variant="h6" sx={{ mb: 1 }}>การใช้งานรายวันของลูกค้านี้</Typography>
               {loading && !detail ? <CircularProgress size={28} /> : detail?.series.length ? <UsageChart series={detail.series} /> : <Alert severity="info">ไม่มีข้อมูลในช่วงนี้</Alert>}
             </Paper>
-            <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+            <Paper elevation={0} sx={{ ...cardSx, p: 2.5 }}>
               <Typography variant="h6">หน้าที่มีคนเข้ามาก</Typography>
               <Typography variant="caption" color="text.secondary">
                 รวม {Number(detail?.kpis.page_views ?? 0).toLocaleString('en-US')} ครั้ง

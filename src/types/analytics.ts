@@ -70,3 +70,20 @@ export interface UsageUsersPage {
   total: number
   rows: UsageUserRow[]
 }
+
+export interface UsageOverviewExport {
+  from: string
+  to: string
+  filters: {
+    account_types: string[]
+    q: string
+    clients: { code: string; name: string }[]
+  }
+  kpis: UsageOverview['kpis']
+  series: UsageSeriesPoint[]
+  clients: Omit<UsageClientRow, 'sparkline'>[]
+}
+
+export interface UsageClientExport extends UsageClientDetail {
+  users: UsageUserRow[]
+}

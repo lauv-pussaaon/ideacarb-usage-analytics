@@ -3,7 +3,7 @@
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ReactNode, useEffect, useMemo } from 'react'
-import { BASE_HTML_FONT_SIZE, DEFAULT_PRIMARY, DEFAULT_SECONDARY, FONT_FAMILY } from '@/theme/tokens'
+import { BASE_HTML_FONT_SIZE, CANVAS, DEFAULT_PRIMARY, DEFAULT_SECONDARY, FONT_FAMILY } from '@/theme/tokens'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -25,7 +25,7 @@ const createAppTheme = (mode: ThemeMode) => {
         contrastText: '#ffffff',
       },
       background: {
-        default: isDark ? '#050B14' : '#f8fafc',
+        default: isDark ? '#050B14' : CANVAS,
         paper: isDark ? '#0B1221' : '#ffffff',
       },
       text: {
@@ -39,7 +39,7 @@ const createAppTheme = (mode: ThemeMode) => {
         200: isDark ? '#1f2937' : '#e2e8f0',
       },
     },
-    shape: { borderRadius: 10 },
+    shape: { borderRadius: 16 },
     typography: {
       htmlFontSize: BASE_HTML_FONT_SIZE,
       fontFamily: FONT_FAMILY,
@@ -47,7 +47,7 @@ const createAppTheme = (mode: ThemeMode) => {
       h6: { fontWeight: 600, fontSize: '1.25rem', lineHeight: 1.4 },
       body1: { fontSize: '1.125rem', lineHeight: 1.6 },
       body2: { fontSize: '1.05rem', lineHeight: 1.55 },
-      button: { fontWeight: 600, letterSpacing: 0, fontSize: '1.05rem' },
+      button: { fontWeight: 600, letterSpacing: 0, fontSize: '1.05rem', textTransform: 'none' },
     },
     components: {
       MuiCssBaseline: {

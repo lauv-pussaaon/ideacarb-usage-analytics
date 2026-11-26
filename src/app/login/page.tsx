@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Alert, Box, Button, Paper, TextField, Typography } from '@mui/material'
+import { cardSx } from '@/lib/ui'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -31,8 +32,8 @@ export default function LoginPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2 }}>
-      <Paper component="form" onSubmit={onSubmit} elevation={0} sx={{ p: 4, width: '80%', maxWidth: 640, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2, bgcolor: 'background.default' }}>
+      <Paper component="form" onSubmit={onSubmit} elevation={0} sx={{ ...cardSx, p: 4, width: '80%', maxWidth: 640 }}>
         <Typography variant="h4" sx={{ fontWeight: 600, mb: 0.5 }}>การใช้งานลูกค้า</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>เข้าสู่ระบบสำหรับทีม IdeaCarb</Typography>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}

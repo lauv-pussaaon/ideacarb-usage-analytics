@@ -25,8 +25,21 @@ export const TENANT_ROLE_LABELS: Record<string, string> = {
   Audit: 'ผู้ทวนสอบ',
 }
 
+export const ACCOUNT_TYPE_COLORS: Record<string, string> = {
+  annual_member: '#10b981',
+  trial: '#f59e0b',
+  demo: '#3b82f6',
+  internal: '#8b5cf6',
+  employee: '#0ea5e9',
+  project: '#f43f5e',
+}
+
 export function accountTypeLabel(value: string): string {
   return ACCOUNT_TYPE_LABELS[value] ?? value
+}
+
+export function accountTypeColor(value: string): string {
+  return ACCOUNT_TYPE_COLORS[value] ?? '#64748b'
 }
 
 export function tenantRoleLabel(value: string): string {

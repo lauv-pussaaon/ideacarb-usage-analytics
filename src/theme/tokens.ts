@@ -18,3 +18,9 @@ export const DEFAULT_PRIMARY = {
 } as const
 
 export const DEFAULT_SECONDARY = '#3b82f6'
+
+export const CANVAS = '#f4f1fb'
+
+export const ACTIVE_CLIENTS = '#f59e0b'
+
+export const SESSIONS = '#8b5cf6'

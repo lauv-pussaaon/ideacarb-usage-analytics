@@ -12,7 +12,16 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from db import connect, ensure_schema
-from store import ACCOUNT_TYPES, client_detail, client_users, overview, record_event, upsert_client
+from store import (
+    ACCOUNT_TYPES,
+    client_detail,
+    client_export,
+    client_users,
+    overview,
+    overview_export,
+    record_event,
+    upsert_client,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -142,6 +151,25 @@ def post_usage(body: UsageBody) -> dict:
     return {"ok": True}
 
 
+def usage_filters(
+    from_: str | None,
+    to: str | None,
+    account_types: str | None,
+    organization_ids: str | None,
+    q: str | None,
+) -> tuple[date, date, list[str] | None, list[str] | None, str | None]:
+    if not from_ or not to:
+        raise HTTPException(status_code=400, detail="from and to are required")
+    start, end = date_range(from_, to)
+    types = [part.strip() for part in (account_types or "").split(",") if part.strip()]
+    if any(part not in ACCOUNT_TYPES for part in types):
+        raise HTTPException(status_code=400, detail="unknown account_type")
+    org_ids = [part.strip() for part in (organization_ids or "").split(",") if part.strip()]
+    for org_id in org_ids:
+        parse_uuid(org_id)
+    return start, end, types or None, org_ids or None, (q or "").strip() or None
+
+
 @app.get("/v1/usage/overview")
 def get_overview(
     from_: str | None = Query(default=None, alias="from"),
@@ -154,29 +182,26 @@ def get_overview(
     page_size: int = 25,
     _: None = Depends(require_secret),
 ) -> dict:
-    if not from_ or not to:
-        raise HTTPException(status_code=400, detail="from and to are required")
-    start, end = date_range(from_, to)
-    types = [part.strip() for part in (account_types or "").split(",") if part.strip()]
-    if any(part not in ACCOUNT_TYPES for part in types):
-        raise HTTPException(status_code=400, detail="unknown account_type")
-    org_ids = [part.strip() for part in (organization_ids or "").split(",") if part.strip()]
-    for org_id in org_ids:
-        parse_uuid(org_id)
+    start, end, types, org_ids, query = usage_filters(from_, to, account_types, organization_ids, q)
     if page < 1 or page_size < 1 or page_size > 100:
         raise HTTPException(status_code=400, detail="invalid page")
     with connect() as conn:
-        return overview(
-            conn,
-            start,
-            end,
-            types or None,
-            org_ids or None,
-            (q or "").strip() or None,
-            sort,
-            page,
-            page_size,
-        )
+        return overview(conn, start, end, types, org_ids, query, sort, page, page_size)
+
+
+@app.get("/v1/usage/export")
+def get_overview_export(
+    from_: str | None = Query(default=None, alias="from"),
+    to: str | None = None,
+    account_types: str | None = None,
+    organization_ids: str | None = None,
+    q: str | None = None,
+    sort: str = "page_views",
+    _: None = Depends(require_secret),
+) -> dict:
+    start, end, types, org_ids, query = usage_filters(from_, to, account_types, organization_ids, q)
+    with connect() as conn:
+        return overview_export(conn, start, end, types, org_ids, query, sort)
 
 
 @app.get("/v1/usage/clients/{organization_id}")
@@ -214,6 +239,24 @@ def get_client_users(
         raise HTTPException(status_code=400, detail="invalid page")
     with connect() as conn:
         payload = client_users(conn, organization_id, start, end, page, page_size)
+    if not payload:
+        raise HTTPException(status_code=404, detail="unknown client")
+    return payload
+
+
+@app.get("/v1/usage/clients/{organization_id}/export")
+def get_client_export(
+    organization_id: str,
+    from_: str | None = Query(default=None, alias="from"),
+    to: str | None = None,
+    _: None = Depends(require_secret),
+) -> dict:
+    parse_uuid(organization_id)
+    if not from_ or not to:
+        raise HTTPException(status_code=400, detail="from and to are required")
+    start, end = date_range(from_, to)
+    with connect() as conn:
+        payload = client_export(conn, organization_id, start, end)
     if not payload:
         raise HTTPException(status_code=404, detail="unknown client")
     return payload

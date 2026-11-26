@@ -1,9 +1,35 @@
 export const pageShellSx = {
   flexGrow: 1,
-  width: '80%',
-  maxWidth: '80%',
-  mx: 'auto',
+  minWidth: 0,
+  px: { xs: 2, md: 4 },
   py: 3,
+} as const
+
+export const cardSx = {
+  bgcolor: 'background.paper',
+  borderRadius: 3,
+  boxShadow: '0 8px 30px rgba(15, 23, 42, 0.06)',
+} as const
+
+export const pillGroupSx = {
+  bgcolor: 'grey.100',
+  borderRadius: 999,
+  p: 0.5,
+  alignSelf: 'flex-start',
+  '& .MuiToggleButtonGroup-grouped': {
+    border: 0,
+    borderRadius: '999px !important',
+    mx: 0.25,
+    px: 1.75,
+    py: 0.75,
+    textTransform: 'none',
+    fontSize: '1.05rem',
+  },
+  '& .MuiToggleButton-root.Mui-selected': {
+    bgcolor: 'common.black',
+    color: 'common.white',
+    '&:hover': { bgcolor: 'common.black' },
+  },
 } as const
 
 export const backButtonSx = {
@@ -46,16 +72,27 @@ export const dataGridPaperSx = {
   minHeight: 520,
   width: '100%',
   backgroundColor: 'background.paper',
-  border: '1px solid',
-  borderColor: 'divider',
-  borderRadius: 2,
+  borderRadius: 3,
+  boxShadow: '0 8px 30px rgba(15, 23, 42, 0.06)',
   overflow: 'hidden',
   overflowX: 'auto',
 } as const
 
+export const codeBadgeSx = {
+  flexShrink: 0,
+  height: 40,
+  borderRadius: 1.5,
+  fontWeight: 700,
+  fontSize: '1.05rem',
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  letterSpacing: '0.01em',
+  bgcolor: 'grey.100',
+  color: 'text.primary',
+} as const
+
 export const dataGridProps = {
   disableColumnMenu: true,
-  rowHeight: 84,
+  rowHeight: 108,
   columnHeaderHeight: 68,
 } as const
 
@@ -79,10 +116,15 @@ export const dataGridSx = {
     borderColor: 'divider',
     display: 'flex',
     alignItems: 'center',
-    py: 0,
+    whiteSpace: 'normal',
+    lineHeight: 1.3,
+    py: 1,
   },
   '& .MuiDataGrid-row:hover': {
     backgroundColor: 'action.hover',
+  },
+  '& .MuiDataGrid-row.quiet-row .MuiDataGrid-cell': {
+    color: 'text.disabled',
   },
   '& .MuiDataGrid-footerContainer': {
     borderTop: '1px solid',
