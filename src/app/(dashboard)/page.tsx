@@ -208,6 +208,90 @@ export default function AnalyticsPage() {
 
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
+      <Paper elevation={0} sx={{ ...cardSx, p: 3, mb: 3, width: '100%', display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Box>
+          <Typography color="text.secondary" sx={{ mb: 1.5 }}>ช่วงเวลา</Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+            <ToggleButtonGroup
+              exclusive
+              value={preset}
+              onChange={(_event, value: Preset | null) => {
+                if (!value) return
+                setPreset(value)
+                setPage(1)
+              }}
+              sx={pillGroupSx}
+            >
+              <ToggleButton value="today">วันนี้</ToggleButton>
+              <ToggleButton value="7">7 วัน</ToggleButton>
+              <ToggleButton value="30">30 วัน</ToggleButton>
+              <ToggleButton value="custom">กำหนดเอง</ToggleButton>
+            </ToggleButtonGroup>
+            {preset === 'custom' && (
+              <>
+                <TextField type="date" value={customFrom} onChange={(event) => { setCustomFrom(event.target.value); setPage(1) }} sx={filterControlSx} />
+                <TextField type="date" value={customTo} onChange={(event) => { setCustomTo(event.target.value); setPage(1) }} sx={filterControlSx} />
+              </>
+            )}
+          </Box>
+        </Box>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          <Autocomplete
+            multiple
+            options={data?.directory ?? []}
+            value={selectedClients}
+            getOptionLabel={(option) => `${option.name} (${option.code})`}
+            isOptionEqualToValue={(option, value) => option.organization_id === value.organization_id}
+            onChange={(_event, value) => {
+              setOrganizationIds(value.map((entry) => entry.organization_id))
+              setPage(1)
+            }}
+            sx={filterControlSx}
+            renderInput={(params) => <TextField {...params} label="ลูกค้า" placeholder="ทุกลูกค้าในกลุ่ม" />}
+          />
+          <TextField
+            label="ค้นหา"
+            placeholder="ค้นหารหัสหรือชื่อ"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            sx={searchFieldSx}
+          />
+        </Box>
+        <Box>
+          <Typography color="text.secondary" sx={{ mb: 1.5 }}>กลุ่มประเภท</Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.25 }}>
+            <Chip
+              label="ทั้งหมด"
+              variant={accountTypes.length === 0 ? 'filled' : 'outlined'}
+              color={accountTypes.length === 0 ? 'primary' : 'default'}
+              onClick={() => { setAccountTypes([]); setPage(1) }}
+              sx={quietChipSx}
+            />
+            {ACCOUNT_TYPES.map((value) => {
+              const selected = accountTypes.includes(value)
+              const color = accountTypeColor(value)
+              return (
+                <Chip
+                  key={value}
+                  label={accountTypeLabel(value)}
+                  onClick={() => {
+                    setAccountTypes((current) => selected ? current.filter((item) => item !== value) : [...current, value])
+                    setPage(1)
+                  }}
+                  sx={{
+                    ...quietChipSx,
+                    color: selected ? '#fff' : color,
+                    bgcolor: selected ? color : `${color}18`,
+                    border: 'none',
+                    '&:hover': { bgcolor: selected ? color : `${color}28` },
+                  }}
+                />
+              )
+            })}
+          </Box>
+        </Box>
+      </Paper>
+
       <Paper elevation={0} sx={{ ...cardSx, p: 3, mb: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'auto 1fr' }, gap: 3, alignItems: 'center' }}>
         <Box>
           <Typography color="text.secondary">เข้าใช้แพลตฟอร์ม</Typography>
@@ -256,91 +340,10 @@ export default function AnalyticsPage() {
         />
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.45fr 0.9fr' }, gap: 2, mb: 3, alignItems: 'start' }}>
-        <Paper elevation={0} sx={{ ...cardSx, p: 2.5 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>การใช้งานรายวัน</Typography>
-          {loading && !data ? <CircularProgress size={28} /> : data?.series.length ? <UsageChart series={data.series} /> : <Alert severity="info">ไม่มีข้อมูลในช่วงนี้</Alert>}
-        </Paper>
-        <Paper elevation={0} sx={{ ...cardSx, p: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <Box>
-            <Typography color="text.secondary" sx={{ mb: 1.5 }}>ช่วงเวลา</Typography>
-            <ToggleButtonGroup
-              exclusive
-              value={preset}
-              onChange={(_event, value: Preset | null) => {
-                if (!value) return
-                setPreset(value)
-                setPage(1)
-              }}
-              sx={pillGroupSx}
-            >
-              <ToggleButton value="today">วันนี้</ToggleButton>
-              <ToggleButton value="7">7 วัน</ToggleButton>
-              <ToggleButton value="30">30 วัน</ToggleButton>
-              <ToggleButton value="custom">กำหนดเอง</ToggleButton>
-            </ToggleButtonGroup>
-            {preset === 'custom' && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 1.5 }}>
-                <TextField type="date" value={customFrom} onChange={(event) => { setCustomFrom(event.target.value); setPage(1) }} sx={filterControlSx} />
-                <TextField type="date" value={customTo} onChange={(event) => { setCustomTo(event.target.value); setPage(1) }} sx={filterControlSx} />
-              </Box>
-            )}
-          </Box>
-          <Autocomplete
-            multiple
-            options={data?.directory ?? []}
-            value={selectedClients}
-            getOptionLabel={(option) => `${option.name} (${option.code})`}
-            isOptionEqualToValue={(option, value) => option.organization_id === value.organization_id}
-            onChange={(_event, value) => {
-              setOrganizationIds(value.map((entry) => entry.organization_id))
-              setPage(1)
-            }}
-            sx={filterControlSx}
-            renderInput={(params) => <TextField {...params} label="ลูกค้า" placeholder="ทุกลูกค้าในกลุ่ม" />}
-          />
-          <TextField
-            label="ค้นหา"
-            placeholder="ค้นหารหัสหรือชื่อ"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            sx={searchFieldSx}
-          />
-          <Box>
-            <Typography color="text.secondary" sx={{ mb: 1.5 }}>กลุ่มประเภท</Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.25 }}>
-              <Chip
-                label="ทั้งหมด"
-                variant={accountTypes.length === 0 ? 'filled' : 'outlined'}
-                color={accountTypes.length === 0 ? 'primary' : 'default'}
-                onClick={() => { setAccountTypes([]); setPage(1) }}
-                sx={quietChipSx}
-              />
-              {ACCOUNT_TYPES.map((value) => {
-                const selected = accountTypes.includes(value)
-                const color = accountTypeColor(value)
-                return (
-                  <Chip
-                    key={value}
-                    label={accountTypeLabel(value)}
-                    onClick={() => {
-                      setAccountTypes((current) => selected ? current.filter((item) => item !== value) : [...current, value])
-                      setPage(1)
-                    }}
-                    sx={{
-                      ...quietChipSx,
-                      color: selected ? '#fff' : color,
-                      bgcolor: selected ? color : `${color}18`,
-                      border: 'none',
-                      '&:hover': { bgcolor: selected ? color : `${color}28` },
-                    }}
-                  />
-                )
-              })}
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
+      <Paper elevation={0} sx={{ ...cardSx, p: 2.5, mb: 3, width: '100%' }}>
+        <Typography variant="h6" sx={{ mb: 1 }}>การใช้งานรายวัน</Typography>
+        {loading && !data ? <CircularProgress size={28} /> : data?.series.length ? <UsageChart series={data.series} /> : <Alert severity="info">ไม่มีข้อมูลในช่วงนี้</Alert>}
+      </Paper>
 
       <Paper elevation={0} sx={dataGridPaperSx}>
         <DataGrid
