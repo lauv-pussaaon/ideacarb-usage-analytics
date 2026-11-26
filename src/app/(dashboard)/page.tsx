@@ -246,7 +246,17 @@ export default function AnalyticsPage() {
               setOrganizationIds(value.map((entry) => entry.organization_id))
               setPage(1)
             }}
-            sx={filterControlSx}
+            sx={{
+              ...filterControlSx,
+              '& .MuiChip-root': {
+                height: 'auto',
+                fontSize: '1.05rem',
+                fontWeight: 600,
+                borderRadius: 1.5,
+                '& .MuiChip-label': { fontSize: '1.05rem', lineHeight: 1.4, py: 0.65, px: 1.25 },
+                '& .MuiChip-deleteIcon': { fontSize: '1.4rem' },
+              },
+            }}
             renderInput={(params) => (
               <TextField
                 {...params}
