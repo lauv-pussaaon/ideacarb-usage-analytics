@@ -25,6 +25,13 @@ def connect():
 
 def ensure_schema(conn) -> None:
     conn.execute(SCHEMA_PATH.read_text(encoding="utf-8"))
+    conn.execute("ALTER TABLE usage_events ADD COLUMN IF NOT EXISTS source_id UUID")
+    conn.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS usage_events_source_occurred
+        ON usage_events (source_id, occurred_at)
+        """
+    )
     today = date.today()
     start = date(today.year, today.month, 1) - timedelta(days=32)
     start = date(start.year, start.month, 1)

@@ -29,4 +29,12 @@ The script attaches to the PM2 daemon that already runs the client apps. It will
 
 The browser posts signed-in page views to `https://analytics.ideacarb.com/api/usage`. That route forwards to FastAPI. FastAPI stores the event when `organization_id` matches a `clients` row, and it stores that row's instance code. Fleet deploy still upserts clients with `ANALYTICS_API_SECRET` to `http://127.0.0.1:8791/v1/clients`.
 
-Rows already in the admin console table `app_usage_tracking` are not imported. The admin console page remains the place to review those rows.
+Signed-in rows already in the admin console table `app_usage_tracking` can be copied once, after this app is installed:
+
+```bash
+cd ~/ideacarb/stacks/ideacarb-usage-analytics
+./scripts/import-supabase-usage.py \
+  --supabase-env ~/ideacarb/stacks/ideacarb-deployment/deploy.env
+```
+
+The script reads `DATABASE_URL` from `.env.local`. It prefers `SUPABASE_SERVICE_ROLE_KEY` in the fleet `deploy.env`. A row is stored when it has a user id and its domain is `{code}.ideacarb.com` for an organization with that code. The display name is the user id, because the old table has no name. Rows with no user id, and domains that are not a tenant, are skipped. IP address, user agent, screen, language, and referrer are not copied. Running it again does not double the counts. The anlt snapshot database is not read.

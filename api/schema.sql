@@ -16,8 +16,14 @@ CREATE TABLE IF NOT EXISTS usage_events (
   user_role TEXT NOT NULL,
   page TEXT NOT NULL,
   session_id TEXT,
+  source_id UUID,
   PRIMARY KEY (id, occurred_at)
 ) PARTITION BY RANGE (occurred_at);
+
+ALTER TABLE usage_events ADD COLUMN IF NOT EXISTS source_id UUID;
+
+CREATE UNIQUE INDEX IF NOT EXISTS usage_events_source_occurred
+  ON usage_events (source_id, occurred_at);
 
 CREATE TABLE IF NOT EXISTS usage_events_default PARTITION OF usage_events DEFAULT;
 

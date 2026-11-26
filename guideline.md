@@ -19,3 +19,5 @@ Public host `https://analytics.ideacarb.com`. The dashboard column is 80% of the
 `./deploy/deploy.sh new` and `update` deploy `origin/master`. `teardown` leaves the database unless `--drop-db` is passed. Do not start a PM2 daemon. `pm2 save` only when other fleet apps are already in the list. Signed-out redirects use `APP_URL`, so the browser stays on the public host instead of `localhost:8792`.
 
 Staff login is `STAFF_USERNAME` / `STAFF_PASSWORD` in gitignored `deploy/deploy.env`.
+
+Historical signed-in page views are copied from Supabase `app_usage_tracking` with `scripts/import-supabase-usage.py`. That copy keeps user id, role, page, session, and the Bangkok day. It does not keep a display name, and it does not read the anlt snapshot database.
