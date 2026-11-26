@@ -29,7 +29,7 @@ export default function UsageChart({ series }: { series: UsageSeriesPoint[] }) {
   const weekend = theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : theme.palette.grey[100]
 
   return (
-    <ResponsiveContainer width="100%" height={320}>
+    <ResponsiveContainer width="100%" height={440}>
       <LineChart data={series} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
         <CartesianGrid stroke={theme.palette.divider} vertical={false} />
         {series.map((point, index) => {
@@ -48,9 +48,9 @@ export default function UsageChart({ series }: { series: UsageSeriesPoint[] }) {
             />
           )
         })}
-        <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fill: theme.palette.text.secondary, fontSize: 12 }} />
-        <YAxis yAxisId="page_views" tick={{ fill: theme.palette.primary.main, fontSize: 12 }} width={48} />
-        <YAxis yAxisId="unique_users" orientation="right" tick={{ fill: theme.palette.secondary.main, fontSize: 12 }} width={36} />
+        <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fill: theme.palette.text.secondary, fontSize: 18 }} />
+        <YAxis yAxisId="page_views" tick={{ fill: theme.palette.primary.main, fontSize: 18 }} width={64} />
+        <YAxis yAxisId="unique_users" orientation="right" tick={{ fill: theme.palette.secondary.main, fontSize: 18 }} width={52} />
         <Tooltip
           labelFormatter={(value) => shortDate(String(value))}
           contentStyle={{

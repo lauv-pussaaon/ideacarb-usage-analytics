@@ -18,7 +18,7 @@ import { DataGrid, type GridColDef, type GridPaginationModel, type GridSortModel
 import { getUsageOverview } from '@/lib/api'
 import { formatDateTime } from '@/lib/datetime'
 import { ACCOUNT_TYPES, accountTypeLabel } from '@/lib/labels'
-import { dataGridPaperSx, dataGridProps, dataGridSx, filterControlSx, pageShellSx, pageTitleSx, quietChipSx, searchFieldSx } from '@/lib/ui'
+import { dataGridPaperSx, dataGridProps, dataGridSx, filterControlSx, kpiValueSx, pageShellSx, pageTitleSx, quietChipSx, searchFieldSx } from '@/lib/ui'
 import type { UsageOverview } from '@/types/analytics'
 import UsageChart from '@/components/UsageChart'
 import Sparkline from '@/components/Sparkline'
@@ -105,8 +105,8 @@ export default function AnalyticsPage() {
     {
       field: 'name',
       headerName: 'ลูกค้า',
-      flex: 1.4,
-      minWidth: 240,
+      flex: 1.6,
+      minWidth: 280,
       sortable: false,
       renderCell: (params) => (
         <Box sx={{ minWidth: 0 }}>
@@ -118,22 +118,25 @@ export default function AnalyticsPage() {
     {
       field: 'account_type',
       headerName: 'ประเภท',
-      width: 150,
+      flex: 0.8,
+      minWidth: 160,
       sortable: false,
       valueGetter: (_value, row) => accountTypeLabel(row.account_type),
     },
-    { field: 'unique_users', headerName: 'ผู้ใช้ไม่ซ้ำ', width: 130, type: 'number' },
-    { field: 'page_views', headerName: 'เข้าชมหน้า', width: 130, type: 'number' },
+    { field: 'unique_users', headerName: 'ผู้ใช้ไม่ซ้ำ', flex: 0.7, minWidth: 150, type: 'number' },
+    { field: 'page_views', headerName: 'เข้าชมหน้า', flex: 0.7, minWidth: 150, type: 'number' },
     {
       field: 'last_seen',
       headerName: 'เห็นล่าสุด',
-      width: 190,
+      flex: 0.9,
+      minWidth: 200,
       valueFormatter: (value) => (value ? formatDateTime(String(value)) : '—'),
     },
     {
       field: 'sparkline',
       headerName: '7 วันล่าสุด',
-      width: 130,
+      flex: 0.7,
+      minWidth: 160,
       sortable: false,
       renderCell: (params) => <Sparkline values={params.row.sparkline ?? []} />,
     },
@@ -148,33 +151,58 @@ export default function AnalyticsPage() {
         ตัวกรองมีผลกับตัวเลข กราฟ และตารางทั้งหน้า
       </Typography>
 
-      <Paper elevation={0} sx={{ p: 2.5, mb: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-        <Typography variant="caption" color="text.secondary">ช่วงเวลา</Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', mt: 1, mb: 2 }}>
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            value={preset}
-            onChange={(_event, value: Preset | null) => {
-              if (!value) return
-              setPreset(value)
-              setPage(1)
-            }}
-          >
-            <ToggleButton value="today">วันนี้</ToggleButton>
-            <ToggleButton value="7">7 วัน</ToggleButton>
-            <ToggleButton value="30">30 วัน</ToggleButton>
-            <ToggleButton value="custom">กำหนดเอง</ToggleButton>
-          </ToggleButtonGroup>
-          {preset === 'custom' && (
-            <>
-              <TextField type="date" size="small" value={customFrom} onChange={(event) => { setCustomFrom(event.target.value); setPage(1) }} sx={filterControlSx} />
-              <TextField type="date" size="small" value={customTo} onChange={(event) => { setCustomTo(event.target.value); setPage(1) }} sx={filterControlSx} />
-            </>
-          )}
+      <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 3, alignItems: 'start' }}>
+          <Box>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 1.5 }}>ช่วงเวลา</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+              <ToggleButtonGroup
+                exclusive
+                value={preset}
+                onChange={(_event, value: Preset | null) => {
+                  if (!value) return
+                  setPreset(value)
+                  setPage(1)
+                }}
+              >
+                <ToggleButton value="today">วันนี้</ToggleButton>
+                <ToggleButton value="7">7 วัน</ToggleButton>
+                <ToggleButton value="30">30 วัน</ToggleButton>
+                <ToggleButton value="custom">กำหนดเอง</ToggleButton>
+              </ToggleButtonGroup>
+              {preset === 'custom' && (
+                <>
+                  <TextField type="date" value={customFrom} onChange={(event) => { setCustomFrom(event.target.value); setPage(1) }} sx={filterControlSx} />
+                  <TextField type="date" value={customTo} onChange={(event) => { setCustomTo(event.target.value); setPage(1) }} sx={filterControlSx} />
+                </>
+              )}
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Autocomplete
+              multiple
+              options={data?.directory ?? []}
+              value={selectedClients}
+              getOptionLabel={(option) => `${option.name} (${option.code})`}
+              isOptionEqualToValue={(option, value) => option.organization_id === value.organization_id}
+              onChange={(_event, value) => {
+                setOrganizationIds(value.map((entry) => entry.organization_id))
+                setPage(1)
+              }}
+              sx={filterControlSx}
+              renderInput={(params) => <TextField {...params} label="ลูกค้า" placeholder="ทุกลูกค้าในกลุ่ม" />}
+            />
+            <TextField
+              label="ค้นหา"
+              placeholder="ค้นหารหัสหรือชื่อ"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              sx={searchFieldSx}
+            />
+          </Box>
         </Box>
-        <Typography variant="caption" color="text.secondary">กลุ่มประเภท</Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1, mb: 2 }}>
+        <Typography variant="body1" color="text.secondary" sx={{ mt: 3, mb: 1.5 }}>กลุ่มประเภท</Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.25 }}>
           <Chip
             label="ทั้งหมด"
             color={accountTypes.length === 0 ? 'primary' : 'default'}
@@ -199,28 +227,6 @@ export default function AnalyticsPage() {
             )
           })}
         </Box>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-          <Autocomplete
-            multiple
-            options={data?.directory ?? []}
-            value={selectedClients}
-            getOptionLabel={(option) => `${option.name} (${option.code})`}
-            isOptionEqualToValue={(option, value) => option.organization_id === value.organization_id}
-            onChange={(_event, value) => {
-              setOrganizationIds(value.map((entry) => entry.organization_id))
-              setPage(1)
-            }}
-            sx={{ minWidth: 280, flex: '1 1 320px', ...filterControlSx }}
-            renderInput={(params) => <TextField {...params} label="ลูกค้า" placeholder="ทุกลูกค้าในกลุ่ม" />}
-          />
-          <TextField
-            label="ค้นหา"
-            placeholder="ค้นหารหัสหรือชื่อ"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            sx={searchFieldSx}
-          />
-        </Box>
       </Paper>
 
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
@@ -231,12 +237,12 @@ export default function AnalyticsPage() {
           ['ผู้ใช้ไม่ซ้ำ', data?.kpis.unique_users, 'ผู้ใช้ที่เข้าสู่ระบบ'],
           ['เข้าชมหน้า', data?.kpis.page_views, 'รวมทุกหน้าของลูกค้าในกลุ่ม'],
         ].map(([label, value, note]) => (
-          <Paper key={String(label)} elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-            <Typography variant="body2" color="text.secondary">{label}</Typography>
-            <Typography variant="h4" sx={{ fontWeight: 600, my: 0.5 }}>
+          <Paper key={String(label)} elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+            <Typography variant="body1" color="text.secondary">{label}</Typography>
+            <Typography sx={kpiValueSx}>
               {loading && !data ? '—' : Number(value ?? 0).toLocaleString('en-US')}
             </Typography>
-            <Typography variant="caption" color="text.secondary">{note}</Typography>
+            <Typography variant="body1" color="text.secondary">{note}</Typography>
           </Paper>
         ))}
       </Box>

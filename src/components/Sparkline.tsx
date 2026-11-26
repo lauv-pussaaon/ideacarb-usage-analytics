@@ -5,7 +5,7 @@ import { Box } from '@mui/material'
 export default function Sparkline({ values }: { values: number[] }) {
   const peak = Math.max(...values, 1)
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: 28, width: 88 }}>
+    <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: 44, width: 140 }}>
       {values.map((value, index) => (
         <Box
           key={index}

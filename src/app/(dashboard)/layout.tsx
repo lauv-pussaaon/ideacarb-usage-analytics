@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 3, pt: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '80%', mx: 'auto', pt: 2 }}>
         <Button color="inherit" onClick={logout}>ออกจากระบบ</Button>
       </Box>
       <Suspense fallback={null}>{children}</Suspense>

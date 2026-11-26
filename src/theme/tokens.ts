@@ -1,3 +1,5 @@
+export const BASE_HTML_FONT_SIZE = 26
+
 export const FONT_FAMILY = [
   'var(--font-anuphan)',
   '-apple-system',

@@ -1,9 +1,8 @@
 export const pageShellSx = {
   flexGrow: 1,
-  width: '100%',
-  maxWidth: 1280,
+  width: '80%',
+  maxWidth: '80%',
   mx: 'auto',
-  px: 3,
   py: 3,
 } as const
 
@@ -25,16 +24,22 @@ export const filterControlSx = {
 } as const
 
 export const searchFieldSx = {
-  minWidth: 280,
-  maxWidth: 420,
-  flex: '1 1 280px',
+  width: '100%',
   '& .MuiOutlinedInput-root': { borderRadius: 2 },
 } as const
 
 export const quietChipSx = {
-  fontWeight: 500,
+  fontWeight: 600,
   borderRadius: 1.5,
-  height: 28,
+  height: 44,
+  fontSize: '1.05rem',
+} as const
+
+export const kpiValueSx = {
+  fontWeight: 600,
+  fontSize: '2.75rem',
+  lineHeight: 1.15,
+  my: 1,
 } as const
 
 export const dataGridPaperSx = {
@@ -50,8 +55,8 @@ export const dataGridPaperSx = {
 
 export const dataGridProps = {
   disableColumnMenu: true,
-  rowHeight: 68,
-  columnHeaderHeight: 52,
+  rowHeight: 84,
+  columnHeaderHeight: 68,
 } as const
 
 export const dataGridSx = {
@@ -63,12 +68,13 @@ export const dataGridSx = {
     borderColor: 'divider',
   },
   '& .MuiDataGrid-columnHeaderTitle': {
-    fontSize: '0.875rem',
+    fontSize: '1.05rem',
     fontWeight: 600,
     color: 'text.secondary',
     letterSpacing: '0.02em',
   },
   '& .MuiDataGrid-cell': {
+    fontSize: '1.05rem',
     borderBottom: '1px solid',
     borderColor: 'divider',
     display: 'flex',

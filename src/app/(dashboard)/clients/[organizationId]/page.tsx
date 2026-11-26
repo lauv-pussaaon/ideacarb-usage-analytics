@@ -10,7 +10,7 @@ import UsageChart from '@/components/UsageChart'
 import { getUsageClient, getUsageUsers } from '@/lib/api'
 import { formatDateTime } from '@/lib/datetime'
 import { accountTypeLabel, tenantRoleLabel } from '@/lib/labels'
-import { backButtonSx, dataGridPaperSx, dataGridProps, dataGridSx, pageShellSx, pageTitleSx } from '@/lib/ui'
+import { backButtonSx, dataGridPaperSx, dataGridProps, dataGridSx, kpiValueSx, pageShellSx, pageTitleSx } from '@/lib/ui'
 import type { UsageClientDetail, UsageUsersPage } from '@/types/analytics'
 
 function defaultRange() {
@@ -68,21 +68,23 @@ export default function AnalyticsClientPage() {
   }, [organizationId, from, to, page])
 
   const columns = useMemo<GridColDef[]>(() => [
-    { field: 'user_label', headerName: 'ผู้ใช้', flex: 1, minWidth: 180 },
+    { field: 'user_label', headerName: 'ผู้ใช้', flex: 1.2, minWidth: 220 },
     {
       field: 'user_role',
       headerName: 'บทบาท',
-      width: 160,
+      flex: 0.8,
+      minWidth: 180,
       valueGetter: (_value, row) => tenantRoleLabel(row.user_role),
     },
-    { field: 'page_views', headerName: 'เข้าชมหน้า', width: 130, type: 'number' },
+    { field: 'page_views', headerName: 'เข้าชมหน้า', flex: 0.7, minWidth: 150, type: 'number' },
     {
       field: 'last_seen',
       headerName: 'เห็นล่าสุด',
-      width: 190,
+      flex: 0.9,
+      minWidth: 210,
       valueFormatter: (value) => (value ? formatDateTime(String(value)) : '—'),
     },
-    { field: 'last_page', headerName: 'หน้าล่าสุด', flex: 1, minWidth: 180 },
+    { field: 'last_page', headerName: 'หน้าล่าสุด', flex: 1.2, minWidth: 220 },
   ], [])
 
   const maxPage = Math.max(...(detail?.pages.map((row) => row.page_views) ?? [1]), 1)
@@ -109,12 +111,12 @@ export default function AnalyticsClientPage() {
               ['เข้าชมหน้า', detail?.kpis.page_views, 'รวมทุกหน้าของลูกค้านี้'],
               ['เซสชัน', detail?.kpis.sessions, 'เซสชันหมดอายุเมื่อว่าง 30 นาที'],
             ].map(([label, value, note]) => (
-              <Paper key={String(label)} elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                <Typography variant="body2" color="text.secondary">{label}</Typography>
-                <Typography variant="h4" sx={{ fontWeight: 600, my: 0.5 }}>
+              <Paper key={String(label)} elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Typography variant="body1" color="text.secondary">{label}</Typography>
+                <Typography sx={kpiValueSx}>
                   {loading && !detail ? '—' : Number(value ?? 0).toLocaleString('en-US')}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">{note}</Typography>
+                <Typography variant="body1" color="text.secondary">{note}</Typography>
               </Paper>
             ))}
           </Box>

@@ -14,7 +14,7 @@ Account types: annual_member, trial, demo, internal, employee, project.
 
 ## Deploy
 
-Public host `https://analytics.ideacarb.com`. Fleet checkout is `~/ideacarb/stacks/ideacarb-usage-analytics`. Next.js is PM2 `ideacarb-usage` on `127.0.0.1:8792`. FastAPI is PM2 `ideacarb-usage-api` on `127.0.0.1:8791`. Role and database are `ideacarb_usage`. Do not point this app at `ideacarb_analytics`.
+Public host `https://analytics.ideacarb.com`. The dashboard column is 80% of the viewport, and the root font size is 26px. Fleet checkout is `~/ideacarb/stacks/ideacarb-usage-analytics`. Next.js is PM2 `ideacarb-usage` on `127.0.0.1:8792`. FastAPI is PM2 `ideacarb-usage-api` on `127.0.0.1:8791`. Role and database are `ideacarb_usage`. Do not point this app at `ideacarb_analytics`.
 
 `./deploy/deploy.sh new` and `update` deploy `origin/master`. `teardown` leaves the database unless `--drop-db` is passed. Do not start a PM2 daemon. `pm2 save` only when other fleet apps are already in the list. Signed-out redirects use `APP_URL`, so the browser stays on the public host instead of `localhost:8792`.
 
