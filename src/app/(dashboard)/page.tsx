@@ -247,7 +247,13 @@ export default function AnalyticsPage() {
               setPage(1)
             }}
             sx={filterControlSx}
-            renderInput={(params) => <TextField {...params} label="ลูกค้า" placeholder="ทุกลูกค้าในกลุ่ม" />}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="ลูกค้า"
+                placeholder={selectedClients.length === 0 ? 'ทุกลูกค้าในกลุ่ม' : ''}
+              />
+            )}
           />
           <TextField
             label="ค้นหา"
