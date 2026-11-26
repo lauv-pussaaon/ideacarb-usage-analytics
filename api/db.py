@@ -35,9 +35,8 @@ def ensure_schema(conn) -> None:
             f"""
             CREATE TABLE IF NOT EXISTS {name}
             PARTITION OF usage_events
-            FOR VALUES FROM (%s) TO (%s)
-            """,
-            (start, nxt),
+            FOR VALUES FROM ('{start.isoformat()}') TO ('{nxt.isoformat()}')
+            """
         )
         start = nxt
     conn.commit()
