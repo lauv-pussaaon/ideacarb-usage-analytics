@@ -2,9 +2,10 @@
 
 IdeaCarb usage analytics is deployed in place from this checkout with [`deploy/deploy.sh`](../deploy/deploy.sh). It is one Next.js site plus a private FastAPI process. It is not the anlt snapshot app and it is not part of `ideacarb-deployment` `deploy.sh`.
 
+On the fleet host the checkout is `~/ideacarb/stacks/ideacarb-usage-analytics`, next to the client stacks and `ideacarb-deployment`.
+
 ```bash
-cd ideacarb-usage-analytics
-cp deploy/deploy.env.example deploy/deploy.env
+cd ~/ideacarb/stacks/ideacarb-usage-analytics
 ./deploy/deploy.sh new
 ./deploy/deploy.sh update
 ./deploy/deploy.sh teardown
