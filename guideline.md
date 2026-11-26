@@ -8,7 +8,7 @@ A view is stored when the browser is signed in and `organization_id` matches a `
 
 Keep: organization id, instance code, user id, display name, tenant role, page, session id, and the Bangkok day. Do not store IP, user agent, screen, language, or referrer.
 
-Unique users are `COUNT DISTINCT user_id` over the selected range. The sparkline is the last 7 days ending on the filter end date. Filters apply to every number, including the chart. The client picker groups clients by whether they have page views in the selected range, highest traffic first. Excel export uses those same filters and includes every matching row.
+Unique users are `COUNT DISTINCT user_id` over the selected range. The sparkline is the last 7 days ending on the filter end date. Filters apply to every number, including the chart. The client picker groups clients by whether they have page views in the selected range, highest traffic first. The dashboard Excel file has two sheets, clients and users, both highest page views first, using the on-screen filters.
 
 Account types: annual_member, trial, demo, internal, employee, project.
 

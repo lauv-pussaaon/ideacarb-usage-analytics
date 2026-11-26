@@ -72,6 +72,17 @@ export interface UsageUsersPage {
   rows: UsageUserRow[]
 }
 
+export interface UsageOverviewUserRow {
+  code: string
+  name: string
+  user_id: string
+  user_label: string
+  user_role: string
+  page_views: number
+  last_seen: string | null
+  last_page: string
+}
+
 export interface UsageOverviewExport {
   from: string
   to: string
@@ -83,6 +94,7 @@ export interface UsageOverviewExport {
   kpis: UsageOverview['kpis']
   series: UsageSeriesPoint[]
   clients: Omit<UsageClientRow, 'sparkline'>[]
+  users: UsageOverviewUserRow[]
 }
 
 export interface UsageClientExport extends UsageClientDetail {

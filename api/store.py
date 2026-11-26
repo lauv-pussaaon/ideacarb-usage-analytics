@@ -414,10 +414,9 @@ def overview_export(
     account_types: list[str] | None,
     organization_ids: list[str] | None,
     query: str | None,
-    sort: str,
+    _sort: str,
 ) -> dict:
     where, params = _filters(account_types, organization_ids, query)
-    order = SORTS.get(sort, "page_views")
 
     kpis = conn.execute(
         f"""
@@ -514,9 +513,32 @@ def overview_export(
          AND d.day BETWEEN %s AND %s
         WHERE {where}
         GROUP BY c.organization_id, c.code, c.name, c.account_type
-        ORDER BY {order} DESC NULLS LAST, c.name
+        ORDER BY page_views DESC, c.name
         """,
         [start, end, start, end, start, end, *params],
+    ).fetchall()
+
+    user_rows = conn.execute(
+        f"""
+        SELECT code, name, user_id, user_label, user_role, page_views, last_seen, last_page
+        FROM (
+          SELECT
+            c.code,
+            c.name,
+            u.user_id::text AS user_id,
+            (array_agg(u.user_label ORDER BY u.last_seen DESC))[1] AS user_label,
+            (array_agg(u.user_role ORDER BY u.last_seen DESC))[1] AS user_role,
+            SUM(u.page_views) AS page_views,
+            MAX(u.last_seen) AS last_seen,
+            (array_agg(u.last_page ORDER BY u.last_seen DESC))[1] AS last_page
+          FROM usage_daily_user u
+          JOIN clients c ON c.organization_id = u.organization_id
+          WHERE u.day BETWEEN %s AND %s AND {where}
+          GROUP BY c.organization_id, c.code, c.name, u.user_id
+        ) users
+        ORDER BY page_views DESC, user_label
+        """,
+        [start, end, *params],
     ).fetchall()
 
     return {
@@ -549,6 +571,14 @@ def overview_export(
                 "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None,
             }
             for row in rows
+        ],
+        "users": [
+            {
+                **row,
+                "page_views": int(row["page_views"]),
+                "last_seen": row["last_seen"].isoformat() if row["last_seen"] else None,
+            }
+            for row in user_rows
         ],
     }
 

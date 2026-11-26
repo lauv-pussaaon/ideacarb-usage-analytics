@@ -38,33 +38,31 @@ export function clientFilename(code: string, from: string, to: string): string {
 
 export async function overviewWorkbook(data: UsageOverviewExport): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook()
-  const accountTypes = data.filters.account_types.length
-    ? data.filters.account_types.map(accountTypeLabel).join(', ')
-    : 'ทั้งหมด'
-  const clients = data.filters.clients.length
-    ? data.filters.clients.map((client) => `${client.name} (${client.code})`).join(', ')
-    : 'ทุกลูกค้า'
-  addSheet(workbook, 'สรุป', ['รายการ', 'ค่า'], [
-    ['ช่วงเวลา', `${data.from} – ${data.to}`],
-    ['ประเภท', accountTypes],
-    ['ลูกค้า', clients],
-    ['ค้นหา', data.filters.q || '—'],
-    ['ลูกค้าที่ใช้งาน', data.kpis.active_clients],
-    ['ผู้ใช้ไม่นับซ้ำ', data.kpis.unique_users],
-    ['เข้าใช้แพลตฟอร์ม', data.kpis.page_views],
-  ])
-  addSheet(workbook, 'รายวัน', ['วันที่', 'เข้าใช้แพลตฟอร์ม', 'ผู้ใช้ไม่นับซ้ำ'], seriesRows(data.series))
   addSheet(
     workbook,
     'ลูกค้า',
-    ['รหัส', 'ชื่อ', 'ประเภท', 'ผู้ใช้ไม่นับซ้ำ', 'เข้าใช้แพลตฟอร์ม', 'เห็นล่าสุด'],
+    ['รหัส', 'ชื่อ', 'ประเภท', 'เข้าใช้แพลตฟอร์ม', 'ผู้ใช้ไม่นับซ้ำ', 'เห็นล่าสุด'],
     data.clients.map((client) => [
       client.code,
       client.name,
       accountTypeLabel(client.account_type),
-      client.unique_users,
       client.page_views,
+      client.unique_users,
       seen(client.last_seen),
+    ])
+  )
+  addSheet(
+    workbook,
+    'ผู้ใช้',
+    ['รหัส', 'ชื่อลูกค้า', 'ผู้ใช้', 'บทบาท', 'เข้าใช้แพลตฟอร์ม', 'เห็นล่าสุด', 'หน้าล่าสุด'],
+    data.users.map((user) => [
+      user.code,
+      user.name,
+      user.user_label,
+      tenantRoleLabel(user.user_role),
+      user.page_views,
+      seen(user.last_seen),
+      user.last_page,
     ])
   )
   return Buffer.from(await workbook.xlsx.writeBuffer())
@@ -72,16 +70,6 @@ export async function overviewWorkbook(data: UsageOverviewExport): Promise<Buffe
 
 export async function clientWorkbook(data: UsageClientExport): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook()
-  addSheet(workbook, 'สรุป', ['รายการ', 'ค่า'], [
-    ['ชื่อ', data.client.name],
-    ['รหัส', data.client.code],
-    ['ประเภท', accountTypeLabel(data.client.account_type)],
-    ['ช่วงเวลา', `${data.from} – ${data.to}`],
-    ['ผู้ใช้ไม่นับซ้ำ', data.kpis.unique_users],
-    ['เข้าใช้แพลตฟอร์ม', data.kpis.page_views],
-    ['เซสชัน', data.kpis.sessions],
-    ['เห็นล่าสุด', seen(data.kpis.last_seen)],
-  ])
   addSheet(workbook, 'รายวัน', ['วันที่', 'เข้าใช้แพลตฟอร์ม', 'ผู้ใช้ไม่นับซ้ำ'], seriesRows(data.series))
   addSheet(
     workbook,
