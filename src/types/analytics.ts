@@ -20,6 +20,7 @@ export interface UsageDirectoryEntry {
   code: string
   name: string
   account_type: string
+  page_views: number
 }
 
 export interface UsageOverview {

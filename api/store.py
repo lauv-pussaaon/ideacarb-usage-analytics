@@ -207,14 +207,23 @@ def overview(
     ).fetchall()
 
     directory_where, directory_params = _filters(account_types, None, None)
-    directory = conn.execute(
+    directory_rows = conn.execute(
         f"""
-        SELECT organization_id::text, code, name, account_type
+        SELECT
+          c.organization_id::text AS organization_id,
+          c.code,
+          c.name,
+          c.account_type,
+          COALESCE(SUM(d.page_views), 0) AS page_views
         FROM clients c
+        LEFT JOIN usage_daily d
+          ON d.organization_id = c.organization_id
+         AND d.day BETWEEN %s AND %s
         WHERE {directory_where}
-        ORDER BY name
+        GROUP BY c.organization_id, c.code, c.name, c.account_type
+        ORDER BY page_views DESC, c.name
         """,
-        directory_params,
+        [start, end, *directory_params],
     ).fetchall()
 
     total = conn.execute(
@@ -281,7 +290,10 @@ def overview(
             }
             for row in series_rows
         ],
-        "directory": directory,
+        "directory": [
+            {**row, "page_views": int(row["page_views"])}
+            for row in directory_rows
+        ],
         "clients": {
             "page": page,
             "page_size": page_size,

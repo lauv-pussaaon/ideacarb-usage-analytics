@@ -9,6 +9,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  ListSubheader,
   Paper,
   TextField,
   ToggleButton,
@@ -242,6 +243,33 @@ export default function AnalyticsPage() {
             value={selectedClients}
             getOptionLabel={(option) => `${option.name} (${option.code})`}
             isOptionEqualToValue={(option, value) => option.organization_id === value.organization_id}
+            groupBy={(option) => option.page_views > 0 ? 'มีการใช้งานในช่วงที่เลือก' : 'ไม่มีการใช้งานในช่วงที่เลือก'}
+            componentsProps={{
+              popper: {
+                placement: 'bottom-start',
+                sx: { width: 'auto !important', minWidth: 'min(760px, calc(100vw - 32px))' },
+              },
+            }}
+            renderGroup={(params) => (
+              <li key={params.key}>
+                <ListSubheader component="div" sx={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.4, bgcolor: 'background.paper', whiteSpace: 'nowrap' }}>
+                  {params.group}
+                </ListSubheader>
+                <ul style={{ padding: 0 }}>{params.children}</ul>
+              </li>
+            )}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 2, minWidth: 0 }}>
+                  <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {option.name} ({option.code})
+                  </Box>
+                  <Typography component="span" color="text.secondary" sx={{ flexShrink: 0 }}>
+                    {option.page_views.toLocaleString('en-US')}
+                  </Typography>
+                </Box>
+              </li>
+            )}
             onChange={(_event, value) => {
               setOrganizationIds(value.map((entry) => entry.organization_id))
               setPage(1)
